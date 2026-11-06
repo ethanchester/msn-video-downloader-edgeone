@@ -180,11 +180,26 @@
       const status = document.querySelector('#status');
       const resultPanel = document.querySelector('#result-panel');
       const apiBase = (window.MSN_API_BASE || '').replace(/\/+$/, '');
+      const localHost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
       let videoInfo = null;
 
       function showStatus(message, isError = false) {
         status.textContent = message;
         status.classList.toggle('error', isError);
+      }
+
+      function getApiUrl(path) {
+        if (!apiBase && !localHost) {
+          throw new Error('The downloader backend is not configured for this site. Deploy the Docker backend, set MSN_API_BASE in public/config.js to its HTTPS URL, then redeploy this page.');
+        }
+        return `${apiBase}${path}`;
+      }
+
+      async function readApiResponse(response) {
+        if (!response.headers.get('content-type')?.includes('application/json')) {
+          throw new Error(`The downloader API returned a web page instead of JSON (HTTP ${response.status}). Check the backend URL in public/config.js.`);
+        }
+        return response.json();
       }
 
       form.addEventListener('submit', async (event) => {
@@ -196,12 +211,12 @@
         showStatus('Checking available formats...');
 
         try {
-          const response = await fetch(`${apiBase}/api/info`, {
+          const response = await fetch(getApiUrl('/api/info'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ url: urlInput.value, authorized: authorizedInput.checked })
           });
-          const data = await response.json();
+          const data = await readApiResponse(response);
           if (!response.ok) throw new Error(data.error || 'Could not inspect this video.');
 
           videoInfo = data;
@@ -230,13 +245,20 @@
 
       downloadButton.addEventListener('click', () => {
         if (!videoInfo || !authorizedInput.checked) return;
+        let downloadUrl;
+        try {
+          downloadUrl = getApiUrl('/api/download');
+        } catch (error) {
+          showStatus(error.message, true);
+          return;
+        }
         const params = new URLSearchParams({
           url: urlInput.value,
           format: formatSelect.value,
           authorized: 'true'
         });
         showStatus('Preparing your download...');
-        window.location.assign(`${apiBase}/api/download?${params}`);
+        window.location.assign(`${downloadUrl}?${params}`);
       });
     </script>
   </body>
