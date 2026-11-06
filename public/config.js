@@ -1,0 +1,1 @@
+window.MSN_API_BASE = '';
