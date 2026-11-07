@@ -1,1 +1,1 @@
-window.MSN_API_BASE = '';
+window.MSN_API_BASE = 'https://msn-video-downloader-edgeone.edgeone.dev';

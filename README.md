@@ -12,7 +12,16 @@ The EdgeOne Pages deployment hosts only the frontend. The downloader requires th
 2. Set `ALLOWED_ORIGINS` on the backend to the exact EdgeOne site origin, such as `https://your-project.edgeone.app`.
 3. Set `MSN_API_BASE` in `public/config.js` to the backend's HTTPS origin, with no trailing slash, then push the change so EdgeOne rebuilds the site.
 
-For local use, leave `MSN_API_BASE` empty, run `npm ci` and `npm start`, then open `http://localhost:3000`.
+## Run locally without Docker
+
+You do not need the Dockerfile for local use. Install Node.js 18 or newer and Python 3, then run these commands from the project directory:
+
+```sh
+npm ci
+npm start
+```
+
+Open `http://localhost:3000`. Leave `MSN_API_BASE` empty in `public/config.js` when using the local server. Keep the terminal running while you use the app; press Ctrl+C to stop it.
 
 ## Backend configuration
 
